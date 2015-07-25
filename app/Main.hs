@@ -3,7 +3,7 @@ module Main (main) where
 
 import           Control.Applicative ((<$>),(<*>))
 import           Control.Monad.State
-import           Data.List ((\\))
+import           Data.List ((\\), intersperse)
 import qualified Data.Map as M
 import           Data.Maybe (catMaybes, fromMaybe)
 
@@ -34,6 +34,12 @@ allVals = [minBound .. maxBound]
 
 showSmall :: SmallField -> String
 showSmall m = unlines $ map (\r -> concatMap (\c -> showMbD $ M.lookup (r,c) m) allVals) allVals
+
+showBig :: BigField -> String
+showBig big = let threeDigits sf sr = concat [showMbD (M.lookup (sr,sc) sf) | sc <- allVals]
+                  line bf br sr = concat $ intersperse "|" [threeDigits (fromMaybe emptyField (M.lookup (br,bc) bf)) sr | bc <- allVals]
+                  threeLines bf br = unlines [line bf br sr | sr <- allVals]
+              in concat $ intersperse "---+---+---\n" [threeLines big br | br <- allVals]
 
 emptyField = M.empty
 
@@ -95,4 +101,17 @@ readBig s = let mbDigs = map readMbD $ concat $ lines s
             in foldl (\b (xb,sf) -> M.adjust (M.union sf) xb b) emptyBig listDig
 
 main :: IO ()
-main = putStrLn "Not yet working..."
+main = do putStrLn "Need solve this:\n"
+          putStrLn bigSample
+          putStrLn "Solving ...\n"
+          putStrLn $ showBig $ head $ solve $ readBig bigSample
+
+bigSample = unlines ["..96.7431"
+                    ,"8...53..9"
+                    ,".6.2..5.."
+                    ,"..89....6"
+                    ,"..2.4.7.5"
+                    ,".....1..."
+                    ,"...5943.2"
+                    ,".27.3..1."
+                    ,"4..1.265."]
